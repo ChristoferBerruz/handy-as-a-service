@@ -1,0 +1,12 @@
+bidict==0.21.2
+certifi==2020.12.5
+chardet==4.0.0
+idna==2.10
+numpy==1.19.5
+opencv-python==4.5.1.48
+python-engineio==4.1.0
+python-socketio==5.2.0
+requests==2.25.1
+six==1.15.0
+urllib3==1.26.4
+websocket-client==0.58.0
