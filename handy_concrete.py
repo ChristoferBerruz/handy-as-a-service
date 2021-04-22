@@ -6,7 +6,7 @@ from utils.transforming import ToTensor, Normalize
 from model import Handy
 import numpy as np
 import torch.nn.functional as F
-#from PIL import Image
+from PIL import Image
 
 """
 This is the network that should be implemented
@@ -99,7 +99,11 @@ class HandyConcrete(IHandyNetwork):
         for i, e in enumerate(events):
             confidence.append(self.probs[e, i])
         print('Condifence: {}'.format([np.round(c, 3) for c in confidence]))
-
+        for i, e in enumerate(events):
+            frame = frames[e]
+            frame = frame[:, :, [2, 1, 0]]
+            image = Image.fromarray(frame)
+            image.save(f'event{i}-{confidence[i]}.jpg')
         time = (events[-1]-events[0])//10        
         return time
 
