@@ -18,7 +18,7 @@ class HandyConcrete(IHandyNetwork):
                                 Normalize([0.485, 0.456, 0.406],
                                           [0.229, 0.224, 0.225])])
         self.seq_length = 128
-        self.probs = []
+        self.probs = None
         self.images = [] # ??? IDK if we should store it in memory
         self.model = Handy(pretrain=True,
                         width_mult=1.,
@@ -32,7 +32,7 @@ class HandyConcrete(IHandyNetwork):
         except:
             print("Model weights not found. Download model weights and place in 'models' folder. See README for instructions")
         self.model.load_state_dict(save_dict['model_state_dict'])
-        self.model.to(device)
+        self.model.to(self.device)
         self.model.eval()
         print("Loaded model weights")
 
@@ -50,12 +50,7 @@ class HandyConcrete(IHandyNetwork):
                 self.probs = np.append(self.probs, F.softmax(logits.data, dim=1).cpu().numpy(), 0)
             batch += 1
 
-
-    def predict_handwashing_time_live(self, frames:list) -> (bool, int):
-
-        return False, 14
-
-    def predict_handwashing_time(self, frames:list) -> int:
+    def preprocess_images(self, frames):
         images = []
         for i, frame in enumerate(frames):
             img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -65,12 +60,32 @@ class HandyConcrete(IHandyNetwork):
         sample = self.transform(sample)        
         images = sample['images']
         images = images.view(1, images.shape[0], images.shape[1], images.shape[2], images.shape[3]) 
-        self.get_probs(frames)
-        events = np.argmax(probs, axis=0)[:-1]
+        return images
+
+    def predict_handwashing_time_live(self, frames:list) -> (bool, int):
+        images = self.preprocess_images(frames)
+        logits = self.model(images.to(self.device))
+        output = F.softmax(logits.data, dim=1).cpu().numpy()
+        signal_end = False
+        if self.probs == None:
+            self.probs = output
+        else:
+            self.probs = np.append(self.probs, output, 0)
+
+        if signal_end:
+
+
+
+        return signal_end, 14
+
+    def predict_handwashing_time(self, frames:list) -> int:
+        images = self.preprocess_images(frames)
+        self.get_probs(images)
+        events = np.argmax(self.probs, axis=0)[:-1]
         print('Predicted event frames: {}'.format(events)) 
         confidence = []
         for i, e in enumerate(events):
-            confidence.append(probs[e, i])
+            confidence.append(self.probs[e, i])
         print('Condifence: {}'.format([np.round(c, 3) for c in confidence]))
 
         time = (events[-1]-events[0])//10        
