@@ -6,7 +6,7 @@ class IHandyNetwork(ABC):
     """
 
     @abstractmethod
-    def predict_handwashing_time_live(self, frames:list) -> bool, int:
+    def predict_handwashing_time_live(self, frames:list) -> (bool, int):
         pass
 
     @abstractmethod
