@@ -55,4 +55,13 @@ class HandySocket(socketio.ClientNamespace):
         self.buffer = []
         self.keep_feeding = True
 
+    def on_frameall(self, frame):
+        nparr = np.frombuffer(frame, np.uint8)
+        img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        self.buffer.append(img_np)
+
+    def on_processall(self):
+        result = self.network.predict_handwashing_time(self.buffer)
+        self.emit('result', result)
+
 handy_handlerer = HandySocket('/pi-frames', handy)

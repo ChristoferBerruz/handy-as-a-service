@@ -83,7 +83,7 @@ class HandyConcreteFake(IHandyNetwork):
         return False, 14
 
     def predict_handwashing_time(self, frames:list) -> int:
-        return 14
+        return 21
 
 
 # This module should have the object initialized
