@@ -63,20 +63,32 @@ class HandyConcrete(IHandyNetwork):
         return images
 
     def predict_handwashing_time_live(self, frames:list) -> (bool, int):
+        handwash_time = 0
         images = self.preprocess_images(frames)
         logits = self.model(images.to(self.device))
         output = F.softmax(logits.data, dim=1).cpu().numpy()
-        signal_end = False
+        should_continue = True
+
+        wrist_disappear_prob = np.argsort(output[:, -1])[-1] # gets event with highest probabily for end of handwashing
+        if wrist_disappear_prob >= 0.9:
+            should_continue = False
+
         if self.probs == None:
             self.probs = output
         else:
             self.probs = np.append(self.probs, output, 0)
 
-        if signal_end:
+        if not should_continue:
+            events = np.argmax(self.probs, axis=0)[:-1]
+            print('Predicted event frames: {}'.format(events)) 
+            confidence = []
+            for i, e in enumerate(events):
+                confidence.append(self.probs[e, i])
+            print('Condifence: {}'.format([np.round(c, 3) for c in confidence]))
+            handwash_time = (events[-1]-events[0])//10 
+            self.probs = None
 
-
-
-        return signal_end, 14
+        return should_continue, handwash_time
 
     def predict_handwashing_time(self, frames:list) -> int:
         images = self.preprocess_images(frames)
