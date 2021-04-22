@@ -53,5 +53,6 @@ class HandySocket(socketio.ClientNamespace):
 
     def on_reset(self):
         self.buffer = []
+        self.keep_feeding = True
 
 handy_handlerer = HandySocket('/pi-frames', handy)
