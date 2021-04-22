@@ -87,4 +87,4 @@ class HandyConcreteFake(IHandyNetwork):
 
 
 # This module should have the object initialized
-handy = HandyConcreteFake()
+handy = HandyConcrete()
