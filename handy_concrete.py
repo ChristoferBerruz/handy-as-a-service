@@ -8,6 +8,13 @@ import numpy as np
 import torch.nn.functional as F
 from PIL import Image
 
+event_names = {
+    0: 'Wrist Appears',
+    1: 'Start Handwashing',
+    2: 'End Handwashing',
+    3: 'Wrist Disappears',
+}
+
 """
 This is the network that should be implemented
 """
@@ -103,8 +110,12 @@ class HandyConcrete(IHandyNetwork):
             frame = frames[e]
             frame = frame[:, :, [2, 1, 0]]
             image = Image.fromarray(frame)
-            image.save(f'event{i}-{confidence[i]}.jpg')
-        time = (events[-1]-events[0])//10        
+            image.save(f'{event_names[i]}-{confidence[i]}.jpg')
+        # Statistically, acoording to our dataset, 
+        # avg time between wrist appearing and start of handwashing is 67.3 frames  
+        # avg time between wrist disappearing and end of handwashing is 26.3 frames
+        # therefore we subtract 67.3+26.3=93.6 frames from the result to get time of handwashing
+        time = (events[-1]-events[0] - 93.6)//10  
         return time
 
 
